@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}Utilisateurs — Fazao{% endblock %}
+{% block page_title %}Gestion des Utilisateurs{% endblock %}
+
+{% block content %}
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <form method="get" class="flex items-center gap-2 flex-1 max-w-sm">
+        <div class="relative flex-1">
+            <i class="fas fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+            <input type="text" name="search" value="{{ search }}" placeholder="Nom, email…"
+                class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-blue-600 focus:outline-none">
+        </div>
+        <button type="submit" class="px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50">Filtrer</button>
+        {% if search %}<a href="?" class="text-xs text-slate-500 hover:text-slate-700">✕</a>{% endif %}
+    </form>
+    <a href="{% url 'users:user_create' %}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white text-sm font-semibold rounded-lg hover:bg-blue-800 transition-colors duration-300">
+        <i class="fas fa-plus"></i> Nouvel utilisateur
+    </a>
+</div>
+<div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+    <table class="w-full text-sm">
+        <thead>
+            <tr class="bg-slate-50 border-b border-slate-200">
+                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Utilisateur</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Rôle</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Statut</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+            {% for u in users %}
+            <tr class="hover:bg-blue-50/30 transition-colors">
+                <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-7 h-7 bg-slate-900 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                            {{ u.username|first|upper }}
+                        </div>
+                        <span class="font-semibold text-slate-900">{{ u.get_full_name|default:u.username }}</span>
+                    </div>
+                </td>
+                <td class="px-6 py-4 text-slate-600">{{ u.email }}</td>
+                <td class="px-6 py-4">
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold
+                        {% if u.role == 'ADMIN' %}bg-violet-100 text-violet-700
+                        {% elif u.role == 'SECRETARY' %}bg-blue-100 text-blue-700
+                        {% elif u.role == 'STOCK_MANAGER' %}bg-amber-100 text-amber-700
+                        {% elif u.role == 'PRODUCTION_MANAGER' %}bg-emerald-100 text-emerald-700
+                        {% else %}bg-slate-100 text-slate-600{% endif %}">
+                        {{ u.get_role_display }}
+                    </span>
+                </td>
+                <td class="px-6 py-4">
+                    {% if u.is_active %}
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-semibold"><span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span> Actif</span>
+                    {% else %}
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-semibold"><span class="w-1.5 h-1.5 bg-slate-400 rounded-full"></span> Inactif</span>
+                    {% endif %}
+                </td>
+                <td class="px-6 py-4">
+                    <div class="flex items-center gap-2">
+                        <a href="{% url 'users:user_update' u.pk %}" class="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs font-medium hover:bg-blue-100"><i class="fas fa-pen"></i> Modifier</a>
+                        <a href="{% url 'users:user_delete' u.pk %}" class="inline-flex items-center gap-1 px-2.5 py-1 bg-red-50 text-red-700 rounded-lg text-xs font-medium hover:bg-red-100"><i class="fas fa-trash-can"></i></a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="px-6 py-16 text-center">
+                <i class="fas fa-users-gear text-slate-300 text-3xl mb-3 block"></i>
+                <p class="text-slate-500 text-sm">Aucun utilisateur</p>
+            </td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

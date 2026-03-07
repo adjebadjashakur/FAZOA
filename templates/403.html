@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% block title %}403 — Accès Refusé{% endblock %}
+{% block page_title %}Accès Refusé{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@900&family=DM+Sans:wght@400;500;600&display=swap');
+
+    .error-403-wrap {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background-color: rgb(32, 60, 107);
+        background-image:
+            radial-gradient(at top center, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0.03) 100%),
+            linear-gradient(to top, rgba(255,255,255,0.1) 0%, rgba(143,152,157,0.60) 100%);
+        background-blend-mode: normal, multiply;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Cage bars animation */
+    .cage {
+        position: absolute;
+        width: 100%;
+        top: 0;
+        bottom: 0;
+        background: repeating-linear-gradient(
+            90deg,
+            transparent,
+            transparent 80px,
+            #6f7376 80px,
+            #181617 100px
+        );
+        z-index: 2;
+        animation: close 3s linear forwards;
+        pointer-events: none;
+    }
+
+    @keyframes close {
+        0%   { left: -75%; }
+        100% { left: 0%; }
+    }
+
+    /* Big 403 number */
+    .number-403 {
+        position: relative;
+        z-index: 1;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 900;
+        font-size: clamp(8rem, 23vw, 23rem);
+        color: #000;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        user-select: none;
+    }
+
+    .number-403 span {
+        position: relative;
+    }
+
+    /* 3D shadow reflection */
+    .number-403 span::after {
+        content: '403';
+        position: absolute;
+        top: 100%;
+        left: 40px;
+        transform: scaleY(0.6) rotateX(-75deg) skewX(-10deg);
+        transform-origin: 50% 0%;
+        opacity: 0.15;
+        line-height: 1;
+        pointer-events: none;
+    }
+
+    /* Subtitle */
+    .label-403 {
+        position: absolute;
+        bottom: 3rem;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 3;
+        text-align: center;
+    }
+
+    .label-403 p {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: rgba(255, 252, 252, 0.81);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+        white-space: nowrap;
+    }
+
+    .btn-403 {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.65rem 1.5rem;
+        background: #181617;
+        color: #E4E4E1;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.8rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        text-decoration: none;
+        border-radius: 0.25rem;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+    .btn-403:hover {
+        background: #2c2a2b;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        color: #fff;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="error-403-wrap">
+
+    <div class="cage"></div>
+
+    <div class="number-403">
+        <span>403</span>
+    </div>
+
+    <div class="label-403">
+        <p>Accès refusé — Vous n'êtes pas autorisé à accéder à cette page</p>
+        <a href="{% url 'dashboard:dashboard' %}" class="btn-403">
+            <i class="fas fa-arrow-left"></i>
+            Retour au dashboard
+        </a>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+{% block title %}{% if form.instance.pk %}Modifier{% else %}Nouveau{% endif %} Article Stock — Fazao{% endblock %}
+{% block page_title %}{% if form.instance.pk %}Modifier{% else %}Nouveau{% endif %} Article Stock{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap');
+
+    * { font-family: 'DM Sans', sans-serif; }
+
+    .form-field-wrapper input,
+    .form-field-wrapper select,
+    .form-field-wrapper textarea {
+        width: 100%;
+        padding: 0.625rem 1rem;
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.625rem;
+        font-size: 0.875rem;
+        color: #0f172a;
+        font-family: 'DM Sans', sans-serif;
+        transition: all 0.2s ease;
+        outline: none;
+        appearance: none;
+    }
+    .form-field-wrapper input:focus,
+    .form-field-wrapper select:focus,
+    .form-field-wrapper textarea:focus {
+        background-color: #fff;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    .form-field-wrapper input::placeholder,
+    .form-field-wrapper textarea::placeholder { color: #94a3b8; }
+    .form-field-wrapper textarea { min-height: 100px; resize: vertical; }
+    .form-field-wrapper select {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 1.25rem;
+        padding-right: 2.5rem;
+        cursor: pointer;
+    }
+    .form-field-wrapper input[type="file"] { padding: 0.5rem; cursor: pointer; }
+
+    .field-error input,
+    .field-error select,
+    .field-error textarea { border-color: #f87171; background-color: #fff5f5; }
+    .field-error input:focus,
+    .field-error select:focus,
+    .field-error textarea:focus { box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.15); }
+
+    .card-glow {
+        box-shadow:
+            0 0 0 1px rgba(148, 163, 184, 0.1),
+            0 4px 6px -1px rgba(0, 0, 0, 0.05),
+            0 10px 40px -10px rgba(0, 0, 0, 0.08);
+    }
+    .btn-primary {
+        background: linear-gradient(135deg, #1e293b 0%, #1e40af 100%);
+        transition: all 0.25s ease;
+        box-shadow: 0 2px 8px rgba(30, 64, 175, 0.25);
+    }
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+        box-shadow: 0 4px 16px rgba(30, 64, 175, 0.4);
+        transform: translateY(-1px);
+    }
+    .btn-primary:active { transform: translateY(0); }
+    .field-label { font-family: 'DM Sans', sans-serif; letter-spacing: 0.06em; }
+</style>
+{% endblock %}
+
+{% block content %}
+ <div class="w-full">
+    <!-- Breadcrumb -->
+    <div class="flex items-center gap-2 text-xs text-slate-400 mb-6 font-medium">
+        <a href="{% url 'stock:stock_list' %}" class="hover:text-blue-500 transition-colors">Stock</a>
+        <i class="fas fa-chevron-right text-[9px] text-slate-300"></i>
+        <span class="text-slate-600">{% if form.instance.pk %}Modifier — {{ form.instance.name }}{% else %}Nouvel article{% endif %}</span>
+    </div>
+
+    <!-- Card principale -->
+    <div class="bg-white rounded-2xl card-glow overflow-hidden w-full">
+
+        <!-- En-tête -->
+        <div class="relative px-8 py-6 bg-gradient-to-r from-slate-900 to-slate-800 overflow-hidden">
+            <div class="absolute top-0 right-0 w-48 h-48 opacity-5">
+                <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="150" cy="50" r="80" stroke="white" stroke-width="40"/>
+                    <circle cx="50" cy="150" r="60" stroke="white" stroke-width="20"/>
+                </svg>
+            </div>
+            <div class="relative flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-{% if form.instance.pk %}pen-to-square{% else %}box{% endif %} text-blue-400 text-lg"></i>
+                </div>
+                <div>
+                    <h2 class="text-white font-semibold text-base leading-tight">
+                        {% if form.instance.pk %}Modifier l'article{% else %}Nouvel article stock{% endif %}
+                    </h2>
+                    <p class="text-slate-400 text-xs mt-0.5">
+                        {% if form.instance.pk %}Mettre à jour les informations de {{ form.instance.name }}{% else %}Remplissez les informations ci-dessous{% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulaire -->
+        <div class="px-8 py-8">
+            <form method="post" enctype="multipart/form-data" class="space-y-6">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                <div class="flex gap-3 px-4 py-3.5 bg-red-50 border border-red-200 rounded-xl">
+                    <div class="w-5 h-5 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <i class="fas fa-circle-exclamation text-red-500 text-[10px]"></i>
+                    </div>
+                    <div>{% for error in form.non_field_errors %}<p class="text-xs text-red-700 font-medium">{{ error }}</p>{% endfor %}</div>
+                </div>
+                {% endif %}
+
+                {% for field in form %}
+                {% if field.widget.input_type != 'hidden' %}
+                <div class="form-field-wrapper {% if field.errors %}field-error{% endif %}">
+                    <label for="{{ field.id_for_label }}" class="field-label block text-[10px] font-bold text-slate-500 uppercase tracking-[0.1em] mb-2">
+                        {{ field.label }}{% if field.field.required %}<span class="text-blue-500 ml-0.5">*</span>{% endif %}
+                    </label>
+                    {{ field }}
+                    {% if field.help_text %}
+                    <p class="mt-1.5 text-[11px] text-slate-400 flex items-center gap-1.5">
+                        <i class="fas fa-circle-info text-slate-300"></i> {{ field.help_text }}
+                    </p>
+                    {% endif %}
+                    {% if field.errors %}
+                    <p class="mt-1.5 text-[11px] text-red-500 flex items-center gap-1.5 font-medium">
+                        <i class="fas fa-circle-exclamation"></i> {{ field.errors|join:", " }}
+                    </p>
+                    {% endif %}
+                </div>
+                {% endif %}
+                {% endfor %}
+
+                <div class="pt-2">
+                    <div class="h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
+                </div>
+
+                <div class="flex items-center gap-3 pt-1">
+                    <button type="submit" class="btn-primary inline-flex items-center gap-2.5 px-6 py-2.5 text-white text-sm font-semibold rounded-xl">
+                        <i class="fas fa-floppy-disk text-blue-300"></i>
+                        {% if form.instance.pk %}Enregistrer les modifications{% else %}Créer l'article{% endif %}
+                    </button>
+                    <a href="{% url 'stock:stock_list' %}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-50 border border-slate-200 text-slate-600 text-sm font-semibold rounded-xl hover:bg-slate-100 hover:border-slate-300 transition-all duration-200">
+                        <i class="fas fa-xmark text-slate-400"></i> Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <p class="mt-4 text-center text-[11px] text-slate-400">
+        Les champs marqués <span class="text-blue-500 font-bold">*</span> sont obligatoires.
+    </p>
+</div>
+{% endblock %}

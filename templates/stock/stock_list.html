@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+{% block title %}Stock — Fazao{% endblock %}
+{% block page_title %}Gestion du Stock{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap');
+
+    * { font-family: 'DM Sans', sans-serif; }
+
+    .card-glow {
+        box-shadow:
+            0 0 0 1px rgba(148, 163, 184, 0.1),
+            0 4px 6px -1px rgba(0, 0, 0, 0.05),
+            0 10px 40px -10px rgba(0, 0, 0, 0.08);
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #1e293b 0%, #1e40af 100%);
+        transition: all 0.25s ease;
+        box-shadow: 0 2px 8px rgba(30, 64, 175, 0.25);
+    }
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+        box-shadow: 0 4px 16px rgba(30, 64, 175, 0.4);
+        transform: translateY(-1px);
+    }
+    .btn-primary:active { transform: translateY(0); }
+
+    thead th {
+        font-family: 'DM Sans', sans-serif;
+        letter-spacing: 0.06em;
+    }
+
+    tbody tr {
+        transition: background 0.15s ease;
+    }
+    tbody tr:hover {
+        background-color: #f0f6ff;
+    }
+
+    .badge-critical {
+        background: #fee2e2;
+        color: #b91c1c;
+        border: 1px solid #fecaca;
+    }
+    .badge-ok {
+        background: #d1fae5;
+        color: #065f46;
+        border: 1px solid #a7f3d0;
+    }
+
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 0.5rem;
+        font-size: 0.7rem;
+        transition: all 0.15s ease;
+    }
+    .action-view  { background:#f1f5f9; color:#475569; }
+    .action-view:hover  { background:#e2e8f0; }
+    .action-edit  { background:#eff6ff; color:#1d4ed8; }
+    .action-edit:hover  { background:#dbeafe; }
+    .action-delete{ background:#fff1f2; color:#be123c; }
+    .action-delete:hover{ background:#ffe4e6; }
+
+    .empty-icon { font-size: 2.5rem; color: #cbd5e1; display: block; margin-bottom: 0.75rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="w-full min-h-screen">
+
+    <!-- Breadcrumb -->
+    <div class="flex items-center gap-2 text-xs text-slate-400 mb-6 font-medium">
+        <span class="text-slate-600">Stock</span>
+        <i class="fas fa-chevron-right text-[9px] text-slate-300"></i>
+        <span>Inventaire des matériaux</span>
+    </div>
+
+    <!-- Card principale -->
+    <div class="bg-white rounded-2xl card-glow overflow-hidden">
+
+        <!-- En-tête -->
+        <div class="relative px-8 py-6 bg-gradient-to-r from-slate-900 to-slate-800 overflow-hidden">
+            <div class="absolute top-0 right-0 w-48 h-48 opacity-5">
+                <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="150" cy="50" r="80" stroke="white" stroke-width="40"/>
+                    <circle cx="50" cy="150" r="60" stroke="white" stroke-width="20"/>
+                </svg>
+            </div>
+            <div class="relative flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-warehouse text-blue-400 text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-white font-semibold text-base leading-tight">Gestion du Stock</h2>
+                        <p class="text-slate-400 text-xs mt-0.5">Inventaire des matériaux</p>
+                    </div>
+                </div>
+                {% if user.is_superuser or user.role == 'ADMIN' or user.role == 'STOCK_MANAGER' %}
+                <a href="{% url 'stock:stock_create' %}" class="btn-primary inline-flex items-center gap-2 px-5 py-2.5 text-white text-sm font-semibold rounded-xl">
+                    <i class="fas fa-plus text-blue-300"></i> Nouvel article
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="bg-slate-50 border-b border-slate-100">
+                        <th class="px-6 py-3.5 text-left text-[10px] font-bold text-slate-500 uppercase tracking-[0.08em]">SKU</th>
+                        <th class="px-6 py-3.5 text-left text-[10px] font-bold text-slate-500 uppercase tracking-[0.08em]">Désignation</th>
+                        <th class="px-6 py-3.5 text-left text-[10px] font-bold text-slate-500 uppercase tracking-[0.08em]">Catégorie</th>
+                        <th class="px-6 py-3.5 text-left text-[10px] font-bold text-slate-500 uppercase tracking-[0.08em]">Qté</th>
+                        <th class="px-6 py-3.5 text-left text-[10px] font-bold text-slate-500 uppercase tracking-[0.08em]">Qté min.</th>
+                        <th class="px-6 py-3.5 text-left text-[10px] font-bold text-slate-500 uppercase tracking-[0.08em]">Alerte</th>
+                        <th class="px-6 py-3.5 text-left text-[10px] font-bold text-slate-500 uppercase tracking-[0.08em]">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    {% for stock in stocks %}
+                    <tr>
+                        <td class="px-6 py-4 font-mono text-xs text-slate-500">{{ stock.sku }}</td>
+                        <td class="px-6 py-4 font-semibold text-slate-900">{{ stock.name }}</td>
+                        <td class="px-6 py-4 text-slate-600 text-xs">{{ stock.get_category_display }}</td>
+                        <td class="px-6 py-4 font-mono font-bold text-slate-900">{{ stock.quantity }}</td>
+                        <td class="px-6 py-4 font-mono text-slate-400">{{ stock.minimum_quantity }}</td>
+                        <td class="px-6 py-4">
+                            {% if stock.quantity < stock.minimum_quantity %}
+                            <span class="badge-critical inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold">
+                                <i class="fas fa-triangle-exclamation text-[10px]"></i> Critique
+                            </span>
+                            {% else %}
+                            <span class="badge-ok inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold">
+                                <i class="fas fa-circle-check text-[10px]"></i> OK
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-1.5">
+                                <a href="{% url 'stock:stock_detail' stock.pk %}" class="action-btn action-view" title="Voir"><i class="fas fa-eye"></i></a>
+                                {% if user.is_superuser or user.role == 'ADMIN' or user.role == 'STOCK_MANAGER' %}
+                                <a href="{% url 'stock:stock_update' stock.pk %}" class="action-btn action-edit" title="Modifier"><i class="fas fa-pen"></i></a>
+                                <a href="{% url 'stock:stock_delete' stock.pk %}" class="action-btn action-delete" title="Supprimer"><i class="fas fa-trash-can"></i></a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="px-6 py-20 text-center">
+                            <i class="fas fa-warehouse empty-icon"></i>
+                            <p class="text-slate-400 text-sm font-medium">Aucun article en stock</p>
+                            <p class="text-slate-300 text-xs mt-1">Commencez par ajouter un article.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

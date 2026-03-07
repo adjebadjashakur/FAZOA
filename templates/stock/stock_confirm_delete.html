@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% block title %}Supprimer Article Stock — Fazao{% endblock %}
+{% block page_title %}Confirmation de suppression{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap');
+
+    * { font-family: 'DM Sans', sans-serif; }
+
+    .card-glow {
+        box-shadow:
+            0 0 0 1px rgba(148, 163, 184, 0.1),
+            0 4px 6px -1px rgba(0, 0, 0, 0.05),
+            0 10px 40px -10px rgba(0, 0, 0, 0.08);
+    }
+
+    .btn-danger {
+        background: linear-gradient(135deg, #991b1b 0%, #dc2626 100%);
+        transition: all 0.25s ease;
+        box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+    }
+    .btn-danger:hover {
+        background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+        box-shadow: 0 4px 16px rgba(220, 38, 38, 0.45);
+        transform: translateY(-1px);
+    }
+    .btn-danger:active { transform: translateY(0); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="w-full min-h-screen">
+
+    <!-- Breadcrumb -->
+    <div class="flex items-center gap-2 text-xs text-slate-400 mb-6 font-medium">
+        <a href="{% url 'stock:stock_list' %}" class="hover:text-blue-500 transition-colors">Stock</a>
+        <i class="fas fa-chevron-right text-[9px] text-slate-300"></i>
+        <span class="text-red-500">Supprimer</span>
+    </div>
+
+    <!-- Card principale -->
+    <div class="bg-white rounded-2xl card-glow overflow-hidden max-w-md">
+
+        <!-- En-tête danger -->
+        <div class="relative px-8 py-6 bg-gradient-to-r from-red-900 to-red-800 overflow-hidden">
+            <div class="absolute top-0 right-0 w-48 h-48 opacity-5">
+                <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="150" cy="50" r="80" stroke="white" stroke-width="40"/>
+                    <circle cx="50" cy="150" r="60" stroke="white" stroke-width="20"/>
+                </svg>
+            </div>
+            <div class="relative flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-red-500/20 border border-red-400/30 flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-triangle-exclamation text-red-300 text-lg"></i>
+                </div>
+                <div>
+                    <h2 class="text-white font-semibold text-base leading-tight">Supprimer cet article ?</h2>
+                    <p class="text-red-300 text-xs mt-0.5">Cette action est irréversible</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Corps -->
+        <div class="px-8 py-8">
+            <p class="text-xs font-bold text-slate-500 uppercase tracking-[0.1em] mb-2">Objet concerné</p>
+            <div class="flex items-center gap-3 px-4 py-3 bg-red-50 border border-red-100 rounded-xl mb-6">
+                <i class="fas fa-box text-red-400 text-sm flex-shrink-0"></i>
+                <p class="font-semibold text-slate-900 text-sm">{{ object.name }}</p>
+            </div>
+
+            <p class="text-xs text-slate-500 mb-6 leading-relaxed">
+                Vous êtes sur le point de supprimer définitivement cet article du stock.
+                Cette opération ne peut pas être annulée.
+            </p>
+
+            <!-- Séparateur -->
+            <div class="h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent mb-6"></div>
+
+            <form method="post" class="flex items-center gap-3">
+                {% csrf_token %}
+                <button type="submit" class="btn-danger inline-flex items-center gap-2.5 px-6 py-2.5 text-white text-sm font-semibold rounded-xl">
+                    <i class="fas fa-trash-can text-red-300"></i> Confirmer la suppression
+                </button>
+                <a href="{% url 'stock:stock_list' %}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-50 border border-slate-200 text-slate-600 text-sm font-semibold rounded-xl hover:bg-slate-100 hover:border-slate-300 transition-all duration-200">
+                    <i class="fas fa-xmark text-slate-400"></i> Annuler
+                </a>
+            </form>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+{% block title %}Utilisateurs — Fazao{% endblock %}
+{% block page_title %}Gestion des Utilisateurs{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap');
+
+    * { font-family: 'DM Sans', sans-serif; }
+
+    .card-glow {
+        box-shadow:
+            0 0 0 1px rgba(148, 163, 184, 0.1),
+            0 4px 6px -1px rgba(0,0,0,0.05),
+            0 10px 40px -10px rgba(0,0,0,0.08);
+    }
+    .btn-primary {
+        background: linear-gradient(135deg, #1e293b 0%, #1e40af 100%);
+        transition: all 0.25s ease;
+        box-shadow: 0 2px 8px rgba(30, 64, 175, 0.25);
+    }
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+        box-shadow: 0 4px 16px rgba(30, 64, 175, 0.4);
+        transform: translateY(-1px);
+    }
+    .btn-primary:active { transform: translateY(0); }
+
+    .search-input {
+        padding: 0.6rem 1rem 0.6rem 2.5rem;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.625rem;
+        font-size: 0.8125rem;
+        color: #0f172a;
+        font-family: 'DM Sans', sans-serif;
+        outline: none;
+        transition: all 0.2s;
+    }
+    .search-input:focus {
+        background: #fff;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    tbody tr { transition: background 0.15s; }
+    tbody tr:hover { background: #f0f6ff; }
+
+    .avatar {
+        width: 32px; height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #1e293b, #1e40af);
+        display: flex; align-items: center; justify-content: center;
+        color: #93c5fd;
+        font-size: 0.75rem;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .badge { display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.2rem 0.625rem; border-radius: 999px; font-size: 11px; font-weight: 600; }
+    .badge-admin   { background: #ede9fe; color: #6d28d9; border: 1px solid #ddd6fe; }
+    .badge-sec     { background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; }
+    .badge-stock   { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+    .badge-prod    { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+    .badge-default { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+
+    .status-active   { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+    .status-inactive { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+
+    .dot { width: 6px; height: 6px; border-radius: 50%; }
+    .dot-active   { background: #10b981; }
+    .dot-inactive { background: #94a3b8; }
+
+    .action-btn {
+        display: inline-flex; align-items: center; gap: 0.3rem;
+        padding: 0.3rem 0.625rem; border-radius: 0.5rem;
+        font-size: 11px; font-weight: 600;
+        transition: all 0.15s;
+    }
+    .action-edit   { background: #eff6ff; color: #1d4ed8; }
+    .action-edit:hover   { background: #dbeafe; }
+    .action-delete { background: #fff1f2; color: #be123c; width: 2rem; height: 2rem; justify-content: center; padding: 0; }
+    .action-delete:hover { background: #ffe4e6; }
+
+    .empty-icon { font-size: 2.5rem; color: #cbd5e1; display: block; margin-bottom: 0.75rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="w-full min-h-screen">
+
+    <!-- Breadcrumb -->
+    <div class="flex items-center gap-2 text-xs text-slate-400 mb-6 font-medium">
+        <span class="text-slate-600">Utilisateurs</span>
+        <i class="fas fa-chevron-right text-[9px] text-slate-300"></i>
+        <span>Gestion des comptes</span>
+    </div>
+
+    <!-- Card principale -->
+    <div class="bg-white rounded-2xl card-glow overflow-hidden">
+
+        <!-- En-tête dark gradient -->
+        <div class="relative px-8 py-6 bg-gradient-to-r from-slate-900 to-slate-800 overflow-hidden">
+            <div class="absolute top-0 right-0 w-48 h-48 opacity-5">
+                <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="150" cy="50" r="80" stroke="white" stroke-width="40"/>
+                    <circle cx="50" cy="150" r="60" stroke="white" stroke-width="20"/>
+                </svg>
+            </div>
+            <div class="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-users-gear text-blue-400 text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-white font-semibold text-base leading-tight">Gestion des Utilisateurs</h2>
+                        <p class="text-slate-400 text-xs mt-0.5">Comptes et rôles d'accès</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <!-- Barre de recherche -->
+                    <form method="get" class="flex items-center gap-2">
+                        <div class="relative">
+                            <i class="fas fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
+                            <input type="text" name="search" value="{{ search }}" placeholder="Nom, email…" class="search-input pl-9 w-52">
+                        </div>
+                        <button type="submit" class="px-3.5 py-2 bg-white/10 border border-white/20 text-slate-300 rounded-lg text-xs font-semibold hover:bg-white/15 transition-colors">
+                            Filtrer
+                        </button>
+                        {% if search %}
+                        <a href="?" class="text-slate-400 hover:text-white text-sm transition-colors" title="Effacer">
+                            <i class="fas fa-xmark"></i>
+                        </a>
+                        {% endif %}
+                    </form>
+                    <a href="{% url 'users:user_create' %}" class="btn-primary inline-flex items-center gap-2 px-5 py-2.5 text-white text-sm font-semibold rounded-xl whitespace-nowrap">
+                        <i class="fas fa-plus text-blue-300"></i> Nouvel utilisateur
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="bg-slate-50 border-b border-slate-100">
+                        <th class="px-6 py-3.5 text-left text-[10px] font-bold text-slate-500 uppercase tracking-[0.08em]">Utilisateur</th>
+                        <th class="px-6 py-3.5 text-left text-[10px] font-bold text-slate-500 uppercase tracking-[0.08em]">Email</th>
+                        <th class="px-6 py-3.5 text-left text-[10px] font-bold text-slate-500 uppercase tracking-[0.08em]">Rôle</th>
+                        <th class="px-6 py-3.5 text-left text-[10px] font-bold text-slate-500 uppercase tracking-[0.08em]">Statut</th>
+                        <th class="px-6 py-3.5 text-left text-[10px] font-bold text-slate-500 uppercase tracking-[0.08em]">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    {% for u in users %}
+                    <tr>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <div class="avatar">{{ u.username|first|upper }}</div>
+                                <span class="font-semibold text-slate-900">{{ u.get_full_name|default:u.username }}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-slate-500 text-xs">{{ u.email }}</td>
+                        <td class="px-6 py-4">
+                            <span class="badge
+                                {% if u.role == 'ADMIN' %}badge-admin
+                                {% elif u.role == 'SECRETARY' %}badge-sec
+                                {% elif u.role == 'STOCK_MANAGER' %}badge-stock
+                                {% elif u.role == 'PRODUCTION_MANAGER' %}badge-prod
+                                {% else %}badge-default{% endif %}">
+                                {{ u.get_role_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if u.is_active %}
+                            <span class="badge status-active"><span class="dot dot-active"></span> Actif</span>
+                            {% else %}
+                            <span class="badge status-inactive"><span class="dot dot-inactive"></span> Inactif</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-1.5">
+                                <a href="{% url 'users:user_update' u.pk %}" class="action-btn action-edit"><i class="fas fa-pen"></i> Modifier</a>
+                                <a href="{% url 'users:user_delete' u.pk %}" class="action-btn action-delete" title="Supprimer"><i class="fas fa-trash-can text-xs"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-20 text-center">
+                            <i class="fas fa-users-gear empty-icon"></i>
+                            <p class="text-slate-400 text-sm font-medium">Aucun utilisateur trouvé</p>
+                            <p class="text-slate-300 text-xs mt-1">Créez le premier compte.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

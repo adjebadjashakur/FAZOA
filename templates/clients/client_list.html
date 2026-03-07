@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% block title %}Clients — Fazao & Traoré{% endblock %}
+{% block page_title %}Gestion des Clients{% endblock %}
+{% block page_subtitle %}Liste de tous les clients{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap');
+    * { font-family: 'DM Sans', sans-serif; }
+
+    .table-row {
+        transition: background 0.15s ease, transform 0.15s ease;
+    }
+    .table-row:hover {
+        background: linear-gradient(90deg, #f0f7ff 0%, #f8fafc 100%);
+    }
+    .search-input:focus {
+        box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+        border-color: #3b82f6;
+        outline: none;
+    }
+    .btn-primary {
+        background: linear-gradient(135deg, #1e293b 0%, #1e40af 100%);
+        box-shadow: 0 2px 8px rgba(30,64,175,0.2);
+        transition: all 0.2s ease;
+    }
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+        box-shadow: 0 4px 16px rgba(30,64,175,0.35);
+        transform: translateY(-1px);
+    }
+    .card-shadow {
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 32px rgba(0,0,0,0.06);
+    }
+    .badge-active   { background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0; }
+    .badge-inactive { background:#f8fafc; color:#475569; border:1px solid #e2e8f0; }
+    .badge-other    { background:#fff1f2; color:#9f1239; border:1px solid #fecdd3; }
+
+    .avatar-circle {
+        background: linear-gradient(135deg, #1e293b, #334155);
+        width: 36px; height: 36px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 13px; font-weight: 700; color: white;
+        flex-shrink: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Barre d'outils -->
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+
+    <form method="get" class="flex items-center gap-2 flex-1 max-w-sm">
+        <div class="relative flex-1">
+            <i class="fas fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            <input type="text" name="search" value="{{ search }}" placeholder="Rechercher un client…"
+                class="search-input w-full pl-9 pr-4 py-2.5 border border-slate-200 bg-white rounded-xl text-sm transition-all">
+        </div>
+        <button type="submit"
+            class="px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-medium hover:border-slate-300 hover:bg-slate-50 transition-all">
+            Filtrer
+        </button>
+        {% if search %}
+        <a href="?" class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 text-slate-500 hover:bg-red-50 hover:text-red-500 text-sm transition-colors" title="Réinitialiser">
+            <i class="fas fa-xmark"></i>
+        </a>
+        {% endif %}
+    </form>
+
+    {% if user.is_superuser or user.role == 'ADMIN' or user.role == 'SECRETARY' %}
+    <a href="{% url 'clients:client_create' %}"
+       class="btn-primary inline-flex items-center gap-2 px-5 py-2.5 text-white text-sm font-semibold rounded-xl">
+        <i class="fas fa-plus text-blue-300 text-xs"></i>
+        Nouveau client
+    </a>
+    {% endif %}
+</div>
+
+<!-- Table -->
+<div class="bg-white rounded-2xl card-shadow overflow-hidden border border-slate-100">
+    <table class="w-full text-sm">
+        <thead>
+            <tr class="border-b border-slate-100">
+                <th class="px-6 py-4 text-left text-[10px] font-bold text-slate-400 uppercase tracking-[0.12em]">Client</th>
+                <th class="px-6 py-4 text-left text-[10px] font-bold text-slate-400 uppercase tracking-[0.12em]">Email</th>
+                <th class="px-6 py-4 text-left text-[10px] font-bold text-slate-400 uppercase tracking-[0.12em]">Téléphone</th>
+                <th class="px-6 py-4 text-left text-[10px] font-bold text-slate-400 uppercase tracking-[0.12em]">Statut</th>
+                <th class="px-6 py-4 text-left text-[10px] font-bold text-slate-400 uppercase tracking-[0.12em]">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50">
+            {% for client in clients %}
+            <tr class="table-row group">
+                <!-- Nom avec avatar -->
+                <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                        <div class="avatar-circle">{{ client.name|first|upper }}</div>
+                        <span class="font-semibold text-slate-900 group-hover:text-blue-700 transition-colors">{{ client.name }}</span>
+                    </div>
+                </td>
+                <!-- Email -->
+                <td class="px-6 py-4 text-slate-500">{{ client.email|default:"—" }}</td>
+                <!-- Téléphone -->
+                <td class="px-6 py-4 text-slate-500 font-mono text-xs tracking-wide">{{ client.phone|default:"—" }}</td>
+                <!-- Statut -->
+                <td class="px-6 py-4">
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold
+                        {% if client.status == 'ACTIVE' %}badge-active
+                        {% elif client.status == 'INACTIVE' %}badge-inactive
+                        {% else %}badge-other{% endif %}">
+                        <span class="w-1.5 h-1.5 rounded-full inline-block
+                            {% if client.status == 'ACTIVE' %}bg-emerald-500
+                            {% elif client.status == 'INACTIVE' %}bg-slate-400
+                            {% else %}bg-red-400{% endif %}">
+                        </span>
+                        {{ client.get_status_display }}
+                    </span>
+                </td>
+                <!-- Actions -->
+                <td class="px-6 py-4">
+                    <div class="flex items-center gap-1.5 opacity-70 group-hover:opacity-100 transition-opacity">
+                        <a href="{% url 'clients:client_detail' client.pk %}"
+                           class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-xs font-medium hover:bg-slate-200 transition-colors"
+                           title="Voir la fiche">
+                            <i class="fas fa-eye text-slate-500"></i> Voir
+                        </a>
+                        {% if user.is_superuser or user.role == 'ADMIN' or user.role == 'SECRETARY' %}
+                        <a href="{% url 'clients:client_update' client.pk %}"
+                           class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-xs font-medium hover:bg-blue-100 transition-colors"
+                           title="Modifier">
+                            <i class="fas fa-pen text-blue-500"></i> Modifier
+                        </a>
+                        <a href="{% url 'clients:client_delete' client.pk %}"
+                           class="inline-flex items-center px-2.5 py-1.5 bg-red-50 text-red-500 rounded-lg text-xs font-medium hover:bg-red-100 transition-colors"
+                           title="Supprimer">
+                            <i class="fas fa-trash-can"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="px-6 py-20 text-center">
+                    <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-building-user text-slate-300 text-2xl"></i>
+                    </div>
+                    <p class="text-slate-500 text-sm font-medium">Aucun client trouvé</p>
+                    <p class="text-slate-400 text-xs mt-1">{% if search %}Essayez un autre terme de recherche{% else %}Commencez par créer un client{% endif %}</p>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="px-6 py-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/50">
+        <p class="text-xs text-slate-400 font-medium">
+            Page <span class="text-slate-600 font-semibold">{{ page_obj.number }}</span> sur <span class="text-slate-600 font-semibold">{{ page_obj.paginator.num_pages }}</span>
+        </p>
+        <div class="flex items-center gap-1.5">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}"
+               class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-lg bg-white text-slate-700 hover:bg-slate-50 transition-colors">
+                <i class="fas fa-chevron-left text-[10px]"></i> Précédent
+            </a>
+            {% endif %}
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}"
+               class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-lg bg-white text-slate-700 hover:bg-slate-50 transition-colors">
+                Suivant <i class="fas fa-chevron-right text-[10px]"></i>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

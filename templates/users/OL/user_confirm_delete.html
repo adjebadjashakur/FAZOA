@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Supprimer Utilisateur — Fazao{% endblock %}
+{% block page_title %}Confirmation de suppression{% endblock %}
+
+{% block content %}
+<div class="max-w-md">
+    <div class="bg-white border border-red-200 rounded-xl shadow-sm overflow-hidden">
+        <div class="px-6 py-5 bg-red-50 border-b border-red-200 flex items-center gap-3">
+            <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-triangle-exclamation text-red-600"></i>
+            </div>
+            <div>
+                <h2 class="text-base font-bold text-slate-900">Supprimer cet utilisateur ?</h2>
+                <p class="text-xs text-slate-500">Cette action est irréversible</p>
+            </div>
+        </div>
+        <div class="px-6 py-5">
+            <p class="text-sm text-slate-700 mb-2">Utilisateur concerné :</p>
+            <p class="font-bold text-slate-900 px-3 py-2 bg-slate-50 rounded-lg border border-slate-200 mb-5">{{ object.get_full_name|default:object.username }}</p>
+            <form method="post" class="flex items-center gap-3">
+                {% csrf_token %}
+                <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700 transition-colors">
+                    <i class="fas fa-trash-can"></i> Confirmer la suppression
+                </button>
+                <a href="{% url 'users:user_list' %}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-300 text-slate-700 text-sm font-semibold rounded-lg hover:bg-slate-50">Annuler</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,59 @@
+Voici tous les thèmes disponibles dans Jazzmin (basés sur Bootswatch) :
+
+---
+
+**Thèmes Clairs (fond blanc/clair)**
+
+| Thème | Style |
+|---|---|
+| `default` | Bootstrap vanilla, blanc classique |
+| `flatly` | Bleu/vert, flat design propre ✅ |
+| `lumen` | Très clair, typographie aérée |
+| `minty` | Vert menthe doux |
+| `pulse` | Violet/rose moderne |
+| `sandstone` | Beige chaleureux |
+| `simplex` | Minimaliste rouge/blanc |
+| `sketchy` | Style dessin à la main |
+| `spacelab` | Bleu gris sobre |
+| `united` | Orange Ubuntu-like |
+| `yeti` | Bleu froid, très lisible |
+| `morph` | Moderne avec ombres douces |
+| `quartz` | Glassmorphism clair |
+| `zephyr` | Bleu pastel élégant |
+| `journal` | Style journal/editorial |
+| `litera` | Typographie soignée, blanc pur |
+| `cerulean` | Bleu classique Bootstrap |
+| `cosmo` | Flat, rouge/blanc moderne |
+
+---
+
+**Thèmes Sombres (fond noir/sombre)**
+
+| Thème | Style |
+|---|---|
+| `darkly` | Sombre classique |
+| `superhero` | Sombre bleu/rouge (votre ancien) |
+| `cyborg` | Sombre high-tech |
+| `slate` | Gris ardoise |
+| `solar` | Sombre orange/jaune |
+| `vapor` | Néon/cyberpunk |
+
+---
+
+**Recommandations selon votre besoin :**
+
+```python
+# Blanc épuré + bleu   → meilleur choix pour vous
+"theme": "flatly"
+
+# Blanc + bleu froid et sobre
+"theme": "cerulean"
+
+# Blanc ultra propre, professionnel
+"theme": "litera"
+
+# Bleu élégant moderne
+"theme": "zephyr"
+```
+
+> Pour tester rapidement, activez le UI Builder temporairement : `"show_ui_builder": True` puis remettez à `False` une fois satisfait.

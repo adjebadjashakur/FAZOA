@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}Commandes — Fazao{% endblock %}
+{% block page_title %}Gestion des Commandes{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+    <p class="text-sm text-slate-500">Toutes les commandes</p>
+    {% if user.is_superuser or user.role == 'ADMIN' or user.role == 'SECRETARY' %}
+    <a href="{% url 'commandes:commande_create' %}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white text-sm font-semibold rounded-lg hover:bg-blue-800 transition-colors duration-300">
+        <i class="fas fa-plus"></i> Nouvelle commande
+    </a>
+    {% endif %}
+</div>
+<div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+    <table class="w-full text-sm">
+        <thead>
+            <tr class="bg-slate-50 border-b border-slate-200">
+                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">N° Commande</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Client</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Quantité</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Date</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Statut</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+            {% for commande in commandes %}
+            <tr class="hover:bg-blue-50/30 transition-colors">
+                <td class="px-6 py-4 font-mono font-semibold text-slate-900">{{ commande.order_number }}</td>
+                <td class="px-6 py-4 text-slate-700">{{ commande.client.name }}</td>
+                <td class="px-6 py-4 font-mono text-slate-700">{{ commande.quantity }}</td>
+                <td class="px-6 py-4 text-slate-500 text-xs">{{ commande.order_date|date:"d/m/Y" }}</td>
+                <td class="px-6 py-4">
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold
+                        {% if commande.status == 'PENDING' %}bg-amber-100 text-amber-700
+                        {% elif commande.status == 'CONFIRMED' %}bg-blue-100 text-blue-700
+                        {% elif commande.status == 'IN_PRODUCTION' %}bg-violet-100 text-violet-700
+                        {% elif commande.status == 'DELIVERED' %}bg-emerald-100 text-emerald-700
+                        {% elif commande.status == 'CANCELLED' %}bg-red-100 text-red-700
+                        {% else %}bg-slate-100 text-slate-600{% endif %}">
+                        {{ commande.get_status_display }}
+                    </span>
+                </td>
+                <td class="px-6 py-4">
+                    <div class="flex items-center gap-2">
+                        <a href="{% url 'commandes:commande_detail' commande.pk %}" class="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg text-xs font-medium hover:bg-slate-200"><i class="fas fa-eye"></i></a>
+                        {% if user.is_superuser or user.role == 'ADMIN' or user.role == 'SECRETARY' %}
+                        <a href="{% url 'commandes:commande_update' commande.pk %}" class="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs font-medium hover:bg-blue-100"><i class="fas fa-pen"></i></a>
+                        <a href="{% url 'commandes:commande_delete' commande.pk %}" class="inline-flex items-center gap-1 px-2.5 py-1 bg-red-50 text-red-700 rounded-lg text-xs font-medium hover:bg-red-100"><i class="fas fa-trash-can"></i></a>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="px-6 py-16 text-center">
+                <i class="fas fa-file-invoice text-slate-300 text-3xl mb-3 block"></i>
+                <p class="text-slate-500 text-sm">Aucune commande</p>
+            </td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

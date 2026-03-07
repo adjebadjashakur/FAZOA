@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% block title %}{{ stock.name }} — Fazao{% endblock %}
+{% block page_title %}Fiche Stock{% endblock %}
+{% block page_subtitle %}{{ stock.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap');
+
+    * { font-family: 'DM Sans', sans-serif; }
+
+    .card-glow {
+        box-shadow:
+            0 0 0 1px rgba(148, 163, 184, 0.1),
+            0 4px 6px -1px rgba(0, 0, 0, 0.05),
+            0 10px 40px -10px rgba(0, 0, 0, 0.08);
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #1e293b 0%, #1e40af 100%);
+        transition: all 0.25s ease;
+        box-shadow: 0 2px 8px rgba(30, 64, 175, 0.25);
+    }
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+        box-shadow: 0 4px 16px rgba(30, 64, 175, 0.4);
+        transform: translateY(-1px);
+    }
+    .btn-primary:active { transform: translateY(0); }
+
+    .stat-value {
+        font-family: 'DM Serif Display', serif;
+        font-size: 2.5rem;
+        line-height: 1;
+    }
+    .dt-label {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #94a3b8;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="w-full min-h-screen">
+
+    <!-- Breadcrumb -->
+    <div class="flex items-center gap-2 text-xs text-slate-400 mb-6 font-medium">
+        <a href="{% url 'stock:stock_list' %}" class="hover:text-blue-500 transition-colors">Stock</a>
+        <i class="fas fa-chevron-right text-[9px] text-slate-300"></i>
+        <span class="text-slate-600">{{ stock.name }}</span>
+    </div>
+
+    <!-- Card principale -->
+    <div class="bg-white rounded-2xl card-glow overflow-hidden max-w-2xl">
+
+        <!-- En-tête -->
+        <div class="relative px-8 py-6 bg-gradient-to-r from-slate-900 to-slate-800 overflow-hidden">
+            <div class="absolute top-0 right-0 w-48 h-48 opacity-5">
+                <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="150" cy="50" r="80" stroke="white" stroke-width="40"/>
+                    <circle cx="50" cy="150" r="60" stroke="white" stroke-width="20"/>
+                </svg>
+            </div>
+            <div class="relative flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-box text-blue-400 text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-white font-semibold text-base leading-tight">{{ stock.name }}</h2>
+                        <p class="text-slate-400 text-xs mt-0.5 font-mono">{{ stock.sku }}</p>
+                    </div>
+                </div>
+                {% if stock.quantity < stock.minimum_quantity %}
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-500/20 border border-red-400/30 text-red-300 rounded-full text-xs font-semibold">
+                    <i class="fas fa-triangle-exclamation"></i> Stock critique
+                </span>
+                {% else %}
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 rounded-full text-xs font-semibold">
+                    <i class="fas fa-circle-check"></i> Niveau OK
+                </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Corps -->
+        <div class="px-8 py-8">
+            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div class="bg-slate-50 rounded-xl px-5 py-4 border border-slate-100">
+                    <dt class="dt-label mb-2">SKU</dt>
+                    <dd class="text-sm font-mono font-semibold text-slate-900">{{ stock.sku }}</dd>
+                </div>
+                <div class="bg-slate-50 rounded-xl px-5 py-4 border border-slate-100">
+                    <dt class="dt-label mb-2">Catégorie</dt>
+                    <dd class="text-sm font-semibold text-slate-900">{{ stock.get_category_display }}</dd>
+                </div>
+                <div class="bg-blue-50 rounded-xl px-5 py-4 border border-blue-100">
+                    <dt class="dt-label mb-2" style="color:#3b82f6">Quantité en stock</dt>
+                    <dd class="stat-value text-slate-900">{{ stock.quantity }}</dd>
+                </div>
+                <div class="bg-slate-50 rounded-xl px-5 py-4 border border-slate-100">
+                    <dt class="dt-label mb-2">Quantité minimum</dt>
+                    <dd class="stat-value text-slate-400">{{ stock.minimum_quantity }}</dd>
+                </div>
+            </dl>
+        </div>
+
+        <!-- Séparateur -->
+        <div class="px-8">
+            <div class="h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
+        </div>
+
+        <!-- Actions -->
+        <div class="px-8 py-6 flex items-center gap-3">
+            {% if user.is_superuser or user.role == 'ADMIN' or user.role == 'STOCK_MANAGER' %}
+            <a href="{% url 'stock:stock_update' stock.pk %}" class="btn-primary inline-flex items-center gap-2 px-5 py-2.5 text-white text-sm font-semibold rounded-xl">
+                <i class="fas fa-pen text-blue-300"></i> Modifier
+            </a>
+            <a href="{% url 'stock:stock_delete' stock.pk %}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-red-200 text-red-600 text-sm font-semibold rounded-xl hover:bg-red-50 hover:border-red-300 transition-all duration-200">
+                <i class="fas fa-trash-can"></i> Supprimer
+            </a>
+            {% endif %}
+            <a href="{% url 'stock:stock_list' %}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-50 border border-slate-200 text-slate-600 text-sm font-semibold rounded-xl hover:bg-slate-100 transition-all duration-200">
+                <i class="fas fa-arrow-left text-slate-400"></i> Retour
+            </a>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

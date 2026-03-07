@@ -1,0 +1,316 @@
+{% extends 'base.html' %}
+{% block title %}404 — Page Introuvable{% endblock %}
+{% block page_title %}Page Introuvable{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inter:wght@300;400;500&display=swap');
+
+    .error-page {
+        min-height: 100vh;
+        width: 100%;
+        font-family: 'Inter', sans-serif;
+        background-color: rgb(32, 60, 107);
+        background-image:
+            radial-gradient(circle at 15% 50%, rgba(180,155,110,0.07) 0%, transparent 55%),
+            radial-gradient(circle at 85% 30%, rgba(30,42,74,0.05) 0%, transparent 45%);
+        display: flex;
+        align-items: center;
+        padding: 3rem 1.5rem;
+        position: fixed;
+        top: 0; left: 0;
+        z-index: 9999;
+        overflow: auto;
+    }
+
+    /* Texture grain subtile */
+    .error-page::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+        pointer-events: none;
+        opacity: 0.4;
+    }
+
+    .container {
+        max-width: 1100px;
+        margin: 0 auto;
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 5rem;
+        align-items: center;
+        position: relative;
+        z-index: 1;
+    }
+
+    @media (max-width: 768px) {
+        .container { grid-template-columns: 1fr; gap: 3rem; text-align: center; }
+        .btn-group { justify-content: center; }
+        .visual-side { order: -1; }
+    }
+
+    /* Côté texte */
+    .error-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-family: 'Syne', sans-serif;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: #FFFEFD;
+        margin-bottom: 1.5rem;
+    }
+    .error-tag::before {
+        content: '';
+        display: inline-block;
+        width: 18px; height: 1px;
+        background: #F8F5F0;
+    }
+
+    .error-title {
+        font-family: 'Syne', sans-serif;
+        font-size: clamp(2rem, 4vw, 3rem);
+        font-weight: 800;
+        color: #1a1f2e;
+        line-height: 1.1;
+        letter-spacing: -0.03em;
+        margin-bottom: 1.25rem;
+    }
+
+    .error-desc {
+        font-size: 0.9375rem;
+        color: #FFFFFF;
+        line-height: 1.7;
+        max-width: 380px;
+        margin-bottom: 2.25rem;
+        font-weight: 400;
+    }
+
+    .btn-group {
+        display: flex;
+        align-items: center;
+        gap: 0.875rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.65rem 1.25rem;
+        font-family: 'Syne', sans-serif;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: #3B5137;
+        background: white;
+        border: 1.5px solid #e5e0d8;
+        border-radius: 0.625rem;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        box-shadow: 0 1px 3px rgba(145, 247, 124, 0.87);
+        cursor: pointer;
+    }
+    .btn-back:hover {
+        background: #f9f7f4;
+        border-color: #d1c9bb;
+        color: #1a1f2e;
+        transform: translateX(-2px);
+    }
+    .btn-back svg { width: 16px; height: 16px; }
+
+    .btn-home {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.65rem 1.5rem;
+        font-family: 'Syne', sans-serif;
+        font-size: 0.8125rem;
+        font-weight: 700;
+        color: white;
+        background: #1A1F2EA8;
+        border: 1.5px solid #1a1f2e;
+        border-radius: 0.625rem;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 14px rgba(26,31,46,0.2);
+    }
+    .btn-home:hover {
+        background: #2d3550;
+        border-color: #2d3550;
+        box-shadow: 0 6px 20px rgba(26,31,46,0.3);
+        transform: translateY(-1px);
+    }
+
+    /* Côté visuel */
+    .visual-side {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+
+    .visual-frame {
+        position: relative;
+        width: 100%;
+        max-width: 420px;
+    }
+
+    /* Grand 404 décoratif en fond */
+    .big-404 {
+        font-family: 'Syne', sans-serif;
+        font-size: clamp(7rem, 14vw, 11rem);
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: -0.06em;
+        color: transparent;
+        -webkit-text-stroke: 1.5px rgb(255, 255, 255);
+        text-align: center;
+        user-select: none;
+        position: relative;
+    }
+
+    /* Carte flottante avec icône */
+    .float-card {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        border: 1px solid #ece8e1;
+        border-radius: 1.25rem;
+        padding: 2rem 2.5rem;
+        text-align: center;
+        box-shadow:
+            0 0 0 1px rgba(180,155,110,0.08),
+            0 20px 60px rgba(26,31,46,0.1),
+            0 4px 12px rgba(26,31,46,0.06);
+        min-width: 200px;
+        animation: float-card 5s ease-in-out infinite;
+    }
+
+    @keyframes float-card {
+        0%, 100% { transform: translate(-50%, -50%) translateY(0px); }
+        50% { transform: translate(-50%, -50%) translateY(-10px); }
+    }
+
+    .float-icon {
+        width: 56px; height: 56px;
+        margin: 0 auto 1rem;
+        background: #fef9ef;
+        border: 1px solid #f0e6cc;
+        border-radius: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .float-icon i { font-size: 1.375rem; color: #b49b6e; }
+
+    .float-label {
+        font-family: 'Syne', sans-serif;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #9ca3af;
+    }
+    .float-value {
+        font-family: 'Syne', sans-serif;
+        font-size: 1.625rem;
+        font-weight: 800;
+        color: #1a1f2e;
+        letter-spacing: -0.04em;
+        line-height: 1.1;
+        margin-top: 0.125rem;
+    }
+
+    /* Petits éléments décoratifs */
+    .deco-dot {
+        position: absolute;
+        border-radius: 50%;
+        background: #b49b6e;
+        opacity: 0.2;
+    }
+    .deco-dot-1 { width: 8px; height: 8px; top: 10%; right: 5%; animation: float-a 4s ease-in-out infinite; }
+    .deco-dot-2 { width: 5px; height: 5px; bottom: 15%; left: 8%; animation: float-b 5.5s ease-in-out infinite 0.8s; }
+    .deco-line {
+        position: absolute;
+        background: linear-gradient(to bottom, rgba(180,155,110,0.3), transparent);
+        width: 1px;
+    }
+    .deco-line-1 { height: 60px; top: 5%; left: 15%; }
+    .deco-line-2 { height: 40px; bottom: 10%; right: 20%; }
+
+    @keyframes float-a { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+    @keyframes float-b { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+
+    /* Breadcrumb hint */
+    .path-hint {
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+        font-size: 0.75rem;
+        color: #9ca3af;
+        margin-bottom: 2rem;
+        font-family: 'Inter', monospace;
+    }
+    .path-hint span { color: #d1c9bb; }
+    .path-hint .current { color: #ef4444; text-decoration: line-through; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="error-page">
+    <div class="container">
+
+        <!-- Texte -->
+        <div class="text-side">
+            <div class="error-tag">Erreur 404</div>
+
+            <h1 class="error-title">Cette page n'existe<br>pas encore.</h1>
+
+            <div class="path-hint">
+                <i class="fas fa-folder-open" style="font-size:0.7rem;color:#d1c9bb"></i>
+                <span>/</span>
+                <span>fazao</span>
+                <span>/</span>
+                <span class="current">{{ request.path }}</span>
+            </div>
+
+            <p class="error-desc">
+                La page que vous cherchez a peut-être été déplacée, renommée, ou n'a jamais existé. Vérifiez l'adresse ou retournez à l'accueil.
+            </p>
+
+            <div class="btn-group">
+                <button onclick="history.back()" class="btn-back">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75L3 12m0 0l3.75-3.75M3 12h18"/>
+                    </svg>
+                    Retour
+                </button>
+                <a href="{% url 'dashboard:dashboard' %}" class="btn-home">
+                    <i class="fas fa-gauge-high" style="font-size:0.75rem;opacity:0.7"></i>
+                    Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Visuel -->
+        <div class="visual-side">
+            <div class="visual-frame">
+                <div class="deco-dot deco-dot-1"></div>
+                <div class="deco-dot deco-dot-2"></div>
+                <div class="deco-line deco-line-1"></div>
+                <div class="deco-line deco-line-2"></div>
+
+                <div class="big-404">404</div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

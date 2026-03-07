@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}Commande {{ commande.order_number }} — Fazao{% endblock %}
+{% block page_title %}Détails Commande{% endblock %}
+{% block page_subtitle %}{{ commande.order_number }}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl space-y-5">
+    <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+            <h2 class="text-base font-bold text-slate-900 font-mono">{{ commande.order_number }}</h2>
+            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold
+                {% if commande.status == 'PENDING' %}bg-amber-100 text-amber-700
+                {% elif commande.status == 'CONFIRMED' %}bg-blue-100 text-blue-700
+                {% elif commande.status == 'IN_PRODUCTION' %}bg-violet-100 text-violet-700
+                {% elif commande.status == 'DELIVERED' %}bg-emerald-100 text-emerald-700
+                {% elif commande.status == 'CANCELLED' %}bg-red-100 text-red-700
+                {% else %}bg-slate-100 text-slate-600{% endif %}">
+                {{ commande.get_status_display }}
+            </span>
+        </div>
+        <div class="px-6 py-5">
+            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div><dt class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Client</dt><dd class="mt-1 text-sm text-slate-900">{{ commande.client.name }}</dd></div>
+                <div><dt class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Quantité</dt><dd class="mt-1 text-sm text-slate-900 font-mono">{{ commande.quantity }}</dd></div>
+                <div><dt class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Prix unitaire</dt><dd class="mt-1 text-sm text-slate-900 font-mono">{{ commande.unit_price }}</dd></div>
+                <div><dt class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Prix total</dt><dd class="mt-1 text-sm font-bold text-slate-900 font-mono">{{ commande.total_price }}</dd></div>
+                <div><dt class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Date commande</dt><dd class="mt-1 text-sm text-slate-900">{{ commande.order_date|date:"d/m/Y" }}</dd></div>
+                <div><dt class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Livraison prévue</dt><dd class="mt-1 text-sm text-slate-900">{{ commande.expected_delivery|date:"d/m/Y"|default:"—" }}</dd></div>
+                {% if commande.description %}<div class="col-span-2"><dt class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Description</dt><dd class="mt-1 text-sm text-slate-900">{{ commande.description }}</dd></div>{% endif %}
+                {% if commande.notes %}<div class="col-span-2"><dt class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Notes</dt><dd class="mt-1 text-sm text-slate-900">{{ commande.notes }}</dd></div>{% endif %}
+            </dl>
+        </div>
+    </div>
+    <div class="flex items-center gap-3">
+        {% if user.is_superuser or user.role == 'ADMIN' or user.role == 'SECRETARY' %}
+        <a href="{% url 'commandes:commande_update' commande.pk %}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white text-sm font-semibold rounded-lg hover:bg-blue-800 transition-colors duration-300"><i class="fas fa-pen"></i> Modifier</a>
+        <a href="{% url 'commandes:commande_delete' commande.pk %}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-red-200 text-red-700 text-sm font-semibold rounded-lg hover:bg-red-50 transition-colors"><i class="fas fa-trash-can"></i> Supprimer</a>
+        {% endif %}
+        <a href="{% url 'commandes:commande_list' %}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-300 text-slate-700 text-sm font-semibold rounded-lg hover:bg-slate-50"><i class="fas fa-arrow-left"></i> Retour</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,240 @@
+{% extends 'base.html' %}
+{% block title %}Tableau de Bord — Fazao & Traoré{% endblock %}
+{% block page_title %}Tableau de bord{% endblock %}
+{% block page_subtitle %}Vue d'ensemble — {{ user.get_role_display }}{% endblock %}
+
+{% block content %}
+
+<!-- ── Stat Cards ──────────────────────────────────── -->
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
+
+    <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+        <div class="flex items-start justify-between">
+            <div>
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Utilisateurs</p>
+                <p class="text-3xl font-bold text-slate-900 mt-1 font-mono">{{ total_users }}</p>
+            </div>
+            <div class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-users-gear text-slate-600"></i>
+            </div>
+        </div>
+        <div class="mt-3 pt-3 border-t border-slate-100">
+            <a href="{% url 'users:user_list' %}" class="text-xs text-blue-700 font-medium hover:underline">
+                Gérer →
+            </a>
+        </div>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+        <div class="flex items-start justify-between">
+            <div>
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Clients</p>
+                <p class="text-3xl font-bold text-slate-900 mt-1 font-mono">{{ total_clients }}</p>
+            </div>
+            <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+                <i class="fas fa-building-user text-blue-700"></i>
+            </div>
+        </div>
+        <div class="mt-3 pt-3 border-t border-slate-100">
+            {% if user.is_superuser or user.role == 'ADMIN' or user.role == 'SECRETARY' %}
+            <a href="{% url 'clients:client_list' %}" class="text-xs text-blue-700 font-medium hover:underline">Voir les clients →</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+        <div class="flex items-start justify-between">
+            <div>
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Commandes</p>
+                <p class="text-3xl font-bold text-slate-900 mt-1 font-mono">{{ total_commandes }}</p>
+            </div>
+            <div class="w-10 h-10 bg-violet-50 rounded-lg flex items-center justify-center">
+                <i class="fas fa-file-invoice text-violet-700"></i>
+            </div>
+        </div>
+        <div class="mt-3 pt-3 border-t border-slate-100">
+            {% if user.is_superuser or user.role == 'ADMIN' or user.role == 'SECRETARY' %}
+            <a href="{% url 'commandes:commande_list' %}" class="text-xs text-blue-700 font-medium hover:underline">Voir les commandes →</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+        <div class="flex items-start justify-between">
+            <div>
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Articles Stock</p>
+                <p class="text-3xl font-bold text-slate-900 mt-1 font-mono">{{ total_stock_items }}</p>
+            </div>
+            <div class="w-10 h-10 bg-amber-50 rounded-lg flex items-center justify-center">
+                <i class="fas fa-warehouse text-amber-600"></i>
+            </div>
+        </div>
+        <div class="mt-3 pt-3 border-t border-slate-100">
+            {% if user.is_superuser or user.role == 'ADMIN' or user.role == 'STOCK_MANAGER' %}
+            <a href="{% url 'stock:stock_list' %}" class="text-xs text-blue-700 font-medium hover:underline">Voir le stock →</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- ── Contenu selon rôle ───────────────────────────── -->
+
+{% if is_admin %}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+    <!-- Commandes récentes -->
+    <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+            <h3 class="text-sm font-semibold text-slate-900">Commandes récentes</h3>
+            <a href="{% url 'commandes:commande_list' %}" class="text-xs text-blue-700 hover:underline">Voir tout</a>
+        </div>
+        <div class="divide-y divide-slate-50">
+            {% for commande in recent_orders %}
+            <div class="flex items-center justify-between px-6 py-3 hover:bg-slate-50 transition-colors">
+                <div>
+                    <p class="text-sm font-semibold text-slate-900 font-mono">{{ commande.order_number }}</p>
+                    <p class="text-xs text-slate-500 mt-0.5">{{ commande.client.name }}</p>
+                </div>
+                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold
+                    {% if commande.status == 'PENDING' %}bg-amber-100 text-amber-700
+                    {% elif commande.status == 'CONFIRMED' %}bg-blue-100 text-blue-700
+                    {% elif commande.status == 'IN_PRODUCTION' %}bg-violet-100 text-violet-700
+                    {% elif commande.status == 'DELIVERED' %}bg-emerald-100 text-emerald-700
+                    {% else %}bg-slate-100 text-slate-600{% endif %}">
+                    {{ commande.get_status_display }}
+                </span>
+            </div>
+            {% empty %}
+            <p class="px-6 py-8 text-sm text-slate-400 text-center">Aucune commande récente</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Commandes en attente + stats -->
+    <div class="space-y-5">
+        <div class="bg-white border border-amber-200 rounded-xl p-6 shadow-sm">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-9 h-9 bg-amber-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-clock text-amber-600"></i>
+                </div>
+                <h3 class="text-sm font-semibold text-slate-900">En attente de confirmation</h3>
+            </div>
+            <p class="text-4xl font-bold text-amber-600 font-mono">{{ pending_orders }}</p>
+            <p class="text-xs text-slate-500 mt-1">commandes à traiter</p>
+            <a href="{% url 'commandes:commande_list' %}"
+               class="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-slate-900 text-white text-xs font-semibold rounded-lg hover:bg-blue-800 transition-colors duration-300">
+                Traiter les commandes <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-9 h-9 bg-slate-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-screwdriver-wrench text-slate-600"></i>
+                </div>
+                <h3 class="text-sm font-semibold text-slate-900">Productions</h3>
+            </div>
+            <p class="text-4xl font-bold text-slate-900 font-mono">{{ total_productions }}</p>
+            <p class="text-xs text-slate-500 mt-1">ordres de fabrication</p>
+            <a href="{% url 'production:production_list' %}"
+               class="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-white border border-slate-300 text-slate-900 text-xs font-semibold rounded-lg hover:bg-slate-50 transition-colors duration-300">
+                Voir l'atelier <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+{% elif is_secretary %}
+<div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <h3 class="text-sm font-semibold text-slate-900">Commandes récentes</h3>
+        <a href="{% url 'commandes:commande_list' %}" class="text-xs text-blue-700 hover:underline">Voir tout</a>
+    </div>
+    <div class="divide-y divide-slate-50">
+        {% for commande in recent_orders %}
+        <div class="flex items-center justify-between px-6 py-3 hover:bg-slate-50">
+            <div>
+                <p class="text-sm font-semibold text-slate-900 font-mono">{{ commande.order_number }}</p>
+                <p class="text-xs text-slate-500">{{ commande.client.name }}</p>
+            </div>
+            <span class="px-2.5 py-1 rounded-full text-xs font-semibold
+                {% if commande.status == 'PENDING' %}bg-amber-100 text-amber-700
+                {% elif commande.status == 'CONFIRMED' %}bg-blue-100 text-blue-700
+                {% elif commande.status == 'DELIVERED' %}bg-emerald-100 text-emerald-700
+                {% else %}bg-slate-100 text-slate-600{% endif %}">
+                {{ commande.get_status_display }}
+            </span>
+        </div>
+        {% empty %}
+        <p class="px-6 py-8 text-sm text-slate-400 text-center">Aucune commande</p>
+        {% endfor %}
+    </div>
+</div>
+
+{% elif is_stock_manager %}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="bg-white border border-red-200 rounded-xl p-6 shadow-sm">
+        <div class="flex items-center gap-3 mb-4">
+            <div class="w-9 h-9 bg-red-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-triangle-exclamation text-red-600"></i>
+            </div>
+            <h3 class="text-sm font-semibold text-slate-900">Stock critique</h3>
+        </div>
+        <p class="text-5xl font-bold text-red-600 font-mono">{{ low_stock_items }}</p>
+        <p class="text-xs text-slate-500 mt-2">articles sous le seuil minimum</p>
+        <a href="{% url 'stock:stock_list' %}"
+           class="inline-flex items-center gap-2 mt-5 px-4 py-2 bg-slate-900 text-white text-xs font-semibold rounded-lg hover:bg-blue-800 transition-colors duration-300">
+            Gérer le stock <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
+    <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+        <div class="flex items-center gap-3 mb-4">
+            <div class="w-9 h-9 bg-slate-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-warehouse text-slate-600"></i>
+            </div>
+            <h3 class="text-sm font-semibold text-slate-900">Total inventaire</h3>
+        </div>
+        <p class="text-5xl font-bold text-slate-900 font-mono">{{ total_stock_items }}</p>
+        <p class="text-xs text-slate-500 mt-2">références en stock</p>
+    </div>
+</div>
+
+{% elif is_production_manager %}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="bg-white border border-blue-200 rounded-xl p-6 shadow-sm">
+        <div class="flex items-center gap-3 mb-4">
+            <div class="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-screwdriver-wrench text-blue-700"></i>
+            </div>
+            <h3 class="text-sm font-semibold text-slate-900">Productions en cours</h3>
+        </div>
+        <p class="text-5xl font-bold text-blue-700 font-mono">{{ active_productions }}</p>
+        <p class="text-xs text-slate-500 mt-2">ordres de fabrication actifs</p>
+        <a href="{% url 'production:production_list' %}"
+           class="inline-flex items-center gap-2 mt-5 px-4 py-2 bg-slate-900 text-white text-xs font-semibold rounded-lg hover:bg-blue-800 transition-colors duration-300">
+            Voir l'atelier <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
+    <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+        <div class="flex items-center gap-3 mb-4">
+            <div class="w-9 h-9 bg-slate-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-list-check text-slate-600"></i>
+            </div>
+            <h3 class="text-sm font-semibold text-slate-900">Total fabrications</h3>
+        </div>
+        <p class="text-5xl font-bold text-slate-900 font-mono">{{ total_productions }}</p>
+        <p class="text-xs text-slate-500 mt-2">ordres enregistrés</p>
+    </div>
+</div>
+
+{% else %}
+<div class="bg-white border border-slate-200 rounded-xl p-8 shadow-sm text-center">
+    <div class="w-14 h-14 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+        <i class="fas fa-layer-group text-slate-500 text-xl"></i>
+    </div>
+    <h3 class="text-base font-semibold text-slate-900">Bienvenue, {{ user.get_full_name|default:user.username }}</h3>
+    <p class="text-sm text-slate-500 mt-1">Rôle : <span class="font-medium text-slate-700">{{ user_role }}</span></p>
+</div>
+{% endif %}
+
+{% endblock %}

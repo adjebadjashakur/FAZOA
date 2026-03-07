@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% block title %}{{ client.name }} — Fazao & Traoré{% endblock %}
+{% block page_title %}Fiche Client{% endblock %}
+{% block page_subtitle %}{{ client.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap');
+    * { font-family: 'DM Sans', sans-serif; }
+
+    .card-shadow {
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 32px rgba(0,0,0,0.06);
+    }
+    .btn-primary {
+        background: linear-gradient(135deg, #1e293b 0%, #1e40af 100%);
+        box-shadow: 0 2px 8px rgba(30,64,175,0.2);
+        transition: all 0.2s ease;
+    }
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+        box-shadow: 0 4px 16px rgba(30,64,175,0.35);
+        transform: translateY(-1px);
+    }
+    .info-row:not(:last-child) { border-bottom: 1px solid #f1f5f9; }
+    .badge-active   { background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0; }
+    .badge-inactive { background:#f8fafc; color:#475569; border:1px solid #e2e8f0; }
+    .badge-other    { background:#fff1f2; color:#9f1239; border:1px solid #fecdd3; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="w-full min-h-screen">
+
+    <!-- Breadcrumb -->
+    <div class="flex items-center gap-2 text-xs text-slate-400 font-medium">
+        <a href="{% url 'clients:client_list' %}" class="hover:text-blue-500 transition-colors">Clients</a>
+        <i class="fas fa-chevron-right text-[9px] text-slate-300"></i>
+        <span class="text-slate-600">{{ client.name }}</span>
+    </div>
+
+    <!-- Carte principale -->
+    <div class="bg-white rounded-2xl card-shadow overflow-hidden border border-slate-100">
+
+        <!-- En-tête avec avatar grand format -->
+        <div class="relative px-8 py-7 bg-gradient-to-r from-slate-900 to-slate-800 overflow-hidden">
+            <!-- Décoration -->
+            <div class="absolute top-0 right-0 w-56 h-56 opacity-[0.04]">
+                <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="160" cy="40" r="90" stroke="white" stroke-width="40"/>
+                    <circle cx="40" cy="160" r="70" stroke="white" stroke-width="20"/>
+                </svg>
+            </div>
+
+            <div class="relative flex items-center gap-5">
+                <!-- Avatar -->
+                <div class="w-16 h-16 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-white font-bold text-2xl flex-shrink-0 backdrop-blur-sm"
+                     style="font-family: 'DM Serif Display', serif;">
+                    {{ client.name|first|upper }}
+                </div>
+                <div class="min-w-0">
+                    <h2 class="text-white font-bold text-xl leading-tight truncate">{{ client.name }}</h2>
+                    <div class="mt-2">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold
+                            {% if client.status == 'ACTIVE' %}badge-active
+                            {% elif client.status == 'INACTIVE' %}badge-inactive
+                            {% else %}badge-other{% endif %}">
+                            <span class="w-1.5 h-1.5 rounded-full inline-block
+                                {% if client.status == 'ACTIVE' %}bg-emerald-500
+                                {% elif client.status == 'INACTIVE' %}bg-slate-400
+                                {% else %}bg-red-400{% endif %}">
+                            </span>
+                            {{ client.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informations -->
+        <div class="divide-y divide-slate-50">
+
+            {% if client.email %}
+            <div class="info-row flex items-center gap-4 px-8 py-4">
+                <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-envelope text-blue-500 text-xs"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.1em]">Email</p>
+                    <p class="text-sm font-medium text-slate-800 mt-0.5 truncate">{{ client.email }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if client.phone %}
+            <div class="info-row flex items-center gap-4 px-8 py-4">
+                <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-phone text-emerald-500 text-xs"></i>
+                </div>
+                <div>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.1em]">Téléphone</p>
+                    <p class="text-sm font-mono font-medium text-slate-800 mt-0.5">{{ client.phone }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if client.address %}
+            <div class="info-row flex items-center gap-4 px-8 py-4">
+                <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-location-dot text-amber-500 text-xs"></i>
+                </div>
+                <div>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.1em]">Adresse</p>
+                    <p class="text-sm font-medium text-slate-800 mt-0.5">{{ client.address }}</p>
+                    {% if client.city or client.postal_code %}
+                    <p class="text-xs text-slate-500 mt-0.5">{{ client.city }}{% if client.postal_code %} — {{ client.postal_code }}{% endif %}{% if client.country %}, {{ client.country }}{% endif %}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if not client.email and not client.phone and not client.address %}
+            <div class="px-8 py-12 text-center">
+                <i class="fas fa-circle-info text-slate-200 text-2xl mb-2 block"></i>
+                <p class="text-sm text-slate-400">Aucune information de contact renseignée</p>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex items-center gap-3">
+        {% if user.is_superuser or user.role == 'ADMIN' or user.role == 'SECRETARY' %}
+        <a href="{% url 'clients:client_update' client.pk %}"
+           class="btn-primary inline-flex items-center gap-2 px-5 py-2.5 text-white text-sm font-semibold rounded-xl">
+            <i class="fas fa-pen text-blue-300 text-xs"></i> Modifier
+        </a>
+        <a href="{% url 'clients:client_delete' client.pk %}"
+           class="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-red-200 text-red-600 text-sm font-semibold rounded-xl hover:bg-red-50 hover:border-red-300 transition-all duration-200">
+            <i class="fas fa-trash-can text-xs"></i> Supprimer
+        </a>
+        {% endif %}
+        <a href="{% url 'clients:client_list' %}"
+           class="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 text-slate-600 text-sm font-semibold rounded-xl hover:bg-slate-50 transition-all duration-200">
+            <i class="fas fa-arrow-left text-slate-400 text-xs"></i> Retour
+        </a>
+    </div>
+
+</div>
+{% endblock %}

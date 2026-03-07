@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block title %}Supprimer Client — Fazao{% endblock %}
+{% block page_title %}Confirmation de suppression{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap');
+    * { font-family: 'DM Sans', sans-serif; }
+
+    .card-shadow {
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 32px rgba(0,0,0,0.08);
+    }
+    .btn-danger {
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        box-shadow: 0 2px 8px rgba(220,38,38,0.25);
+        transition: all 0.2s ease;
+    }
+    .btn-danger:hover {
+        background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+        box-shadow: 0 4px 16px rgba(220,38,38,0.4);
+        transform: translateY(-1px);
+    }
+    .warning-pulse {
+        animation: pulse-ring 2s ease-out infinite;
+    }
+    @keyframes pulse-ring {
+        0%   { box-shadow: 0 0 0 0 rgba(239,68,68,0.3); }
+        70%  { box-shadow: 0 0 0 10px rgba(239,68,68,0); }
+        100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-md">
+
+    <!-- Breadcrumb -->
+    <div class="flex items-center gap-2 text-xs text-slate-400 font-medium mb-6">
+        <a href="{% url 'clients:client_list' %}" class="hover:text-blue-500 transition-colors">Clients</a>
+        <i class="fas fa-chevron-right text-[9px] text-slate-300"></i>
+        <span class="text-red-500">Suppression</span>
+    </div>
+
+    <!-- Carte de confirmation -->
+    <div class="bg-white rounded-2xl card-shadow overflow-hidden border border-red-100">
+
+        <!-- En-tête -->
+        <div class="relative px-8 py-7 bg-gradient-to-br from-red-600 to-red-800 overflow-hidden">
+            <!-- Décoration -->
+            <div class="absolute top-0 right-0 w-48 h-48 opacity-[0.06]">
+                <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="150" cy="50" r="80" stroke="white" stroke-width="40"/>
+                </svg>
+            </div>
+            <div class="relative flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center warning-pulse">
+                    <i class="fas fa-triangle-exclamation text-white text-lg"></i>
+                </div>
+                <div>
+                    <h2 class="text-white font-bold text-base leading-tight">Supprimer ce client ?</h2>
+                    <p class="text-red-200 text-xs mt-0.5">Cette action est définitive et irréversible</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Corps -->
+        <div class="px-8 py-7 space-y-6">
+
+            <!-- Nom du client -->
+            <div>
+                <p class="text-xs text-slate-500 mb-2">Vous êtes sur le point de supprimer :</p>
+                <div class="flex items-center gap-3 px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl">
+                    <div class="w-9 h-9 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                        {{ object.name|first|upper }}
+                    </div>
+                    <p class="font-bold text-slate-900 text-base">{{ object.name }}</p>
+                </div>
+            </div>
+
+            <!-- Avertissement -->
+            <div class="flex gap-3 px-4 py-3.5 bg-amber-50 border border-amber-200 rounded-xl">
+                <i class="fas fa-circle-info text-amber-500 mt-0.5 flex-shrink-0"></i>
+                <p class="text-xs text-amber-800 leading-relaxed">
+                    Toutes les données associées à ce client (commandes, historique, documents) seront <strong>définitivement supprimées</strong>.
+                </p>
+            </div>
+
+            <!-- Boutons -->
+            <div class="flex items-center gap-3 pt-1">
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-danger inline-flex items-center gap-2 px-5 py-2.5 text-white text-sm font-semibold rounded-xl">
+                        <i class="fas fa-trash-can text-red-200 text-xs"></i>
+                        Supprimer définitivement
+                    </button>
+                </form>
+                <a href="{% url 'clients:client_list' %}"
+                   class="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-50 border border-slate-200 text-slate-700 text-sm font-semibold rounded-xl hover:bg-slate-100 hover:border-slate-300 transition-all duration-200">
+                    <i class="fas fa-xmark text-slate-400 text-xs"></i>
+                    Annuler
+                </a>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

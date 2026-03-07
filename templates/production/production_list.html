@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% block title %}Production — Fazao{% endblock %}
+{% block page_title %}Gestion de la Production{% endblock %}
+{% block page_subtitle %}Ordres de fabrication{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+    * { font-family: 'DM Sans', sans-serif; }
+
+    .card-shadow { box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 32px rgba(0,0,0,0.06); }
+    .order-num { font-family: 'DM Mono', monospace; }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #1e293b 0%, #1e40af 100%);
+        box-shadow: 0 2px 8px rgba(30,64,175,0.2);
+        transition: all 0.2s ease;
+    }
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+        box-shadow: 0 4px 16px rgba(30,64,175,0.35);
+        transform: translateY(-1px);
+    }
+
+    .table-row { transition: background 0.15s ease; }
+    .table-row:hover { background: linear-gradient(90deg, #f0f7ff, #f8fafc); }
+    .table-row:hover .row-actions { opacity: 1; }
+    .row-actions { opacity: 0.5; transition: opacity 0.15s; }
+
+    .badge { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:99px; font-size:11px; font-weight:600; border-width:1px; border-style:solid; }
+    .badge-pending    { background:#fffbeb; color:#92400e; border-color:#fde68a; }
+    .badge-progress   { background:#eff6ff; color:#1e40af; border-color:#bfdbfe; }
+    .badge-completed  { background:#ecfdf5; color:#065f46; border-color:#a7f3d0; }
+    .badge-cancelled  { background:#fff1f2; color:#9f1239; border-color:#fecdd3; }
+    .badge-default    { background:#f8fafc; color:#475569; border-color:#e2e8f0; }
+
+    /* Barre de progression visuelle par statut */
+    .progress-track { height: 3px; background: #f1f5f9; border-radius: 99px; overflow: hidden; width: 64px; }
+    .progress-fill  { height: 100%; border-radius: 99px; transition: width 0.3s ease; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Barre d'outils -->
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <div>
+        <p class="text-sm text-slate-500">Suivi des ordres de fabrication en cours et terminés</p>
+    </div>
+    {% if user.is_superuser or user.role == 'ADMIN' or user.role == 'PRODUCTION_MANAGER' %}
+    <a href="{% url 'production:production_create' %}"
+       class="btn-primary inline-flex items-center gap-2 px-5 py-2.5 text-white text-sm font-semibold rounded-xl self-start sm:self-auto">
+        <i class="fas fa-plus text-blue-300 text-xs"></i>
+        Nouvel ordre de fabrication
+    </a>
+    {% endif %}
+</div>
+
+<!-- Table -->
+<div class="bg-white rounded-2xl card-shadow overflow-hidden border border-slate-100">
+    <table class="w-full text-sm">
+        <thead>
+            <tr class="border-b border-slate-100">
+                <th class="px-6 py-4 text-left text-[10px] font-bold text-slate-400 uppercase tracking-[0.12em]">Commande liée</th>
+                <th class="px-6 py-4 text-left text-[10px] font-bold text-slate-400 uppercase tracking-[0.12em]">Qté produite</th>
+                <th class="px-6 py-4 text-left text-[10px] font-bold text-slate-400 uppercase tracking-[0.12em]">Statut</th>
+                <th class="px-6 py-4 text-left text-[10px] font-bold text-slate-400 uppercase tracking-[0.12em]">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50">
+            {% for production in productions %}
+            <tr class="table-row group">
+
+                <!-- Commande -->
+                <td class="px-6 py-4">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-file-invoice text-slate-400 text-[11px]"></i>
+                        </div>
+                        <div>
+                            <span class="order-num font-semibold text-slate-900 text-sm">{{ production.commande.order_number }}</span>
+                            {% if production.commande.client %}
+                            <p class="text-[11px] text-slate-400 mt-0.5">{{ production.commande.client.name }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </td>
+
+                <!-- Quantité -->
+                <td class="px-6 py-4">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-cubes text-violet-400 text-[11px]"></i>
+                        </div>
+                        <span class="order-num font-bold text-slate-900 text-base">{{ production.produced_quantity }}</span>
+                    </div>
+                </td>
+
+                <!-- Statut -->
+                <td class="px-6 py-4">
+                    <div class="space-y-2">
+                        {% if production.status == 'PENDING' %}
+                        <span class="badge badge-pending"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>{{ production.get_status_display }}</span>
+                        <div class="progress-track"><div class="progress-fill bg-amber-400" style="width:25%"></div></div>
+                        {% elif production.status == 'IN_PROGRESS' %}
+                        <span class="badge badge-progress"><span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>{{ production.get_status_display }}</span>
+                        <div class="progress-track"><div class="progress-fill bg-blue-500" style="width:60%"></div></div>
+                        {% elif production.status == 'COMPLETED' %}
+                        <span class="badge badge-completed"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>{{ production.get_status_display }}</span>
+                        <div class="progress-track"><div class="progress-fill bg-emerald-500" style="width:100%"></div></div>
+                        {% elif production.status == 'CANCELLED' %}
+                        <span class="badge badge-cancelled"><span class="w-1.5 h-1.5 rounded-full bg-red-400"></span>{{ production.get_status_display }}</span>
+                        <div class="progress-track"><div class="progress-fill bg-red-300" style="width:15%"></div></div>
+                        {% else %}
+                        <span class="badge badge-default"><span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>{{ production.get_status_display }}</span>
+                        <div class="progress-track"><div class="progress-fill bg-slate-300" style="width:0%"></div></div>
+                        {% endif %}
+                    </div>
+                </td>
+
+                <!-- Actions -->
+                <td class="px-6 py-4">
+                    <div class="row-actions flex items-center gap-1.5">
+                        <a href="{% url 'production:production_detail' production.pk %}"
+                           class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-xs font-medium hover:bg-slate-200 transition-colors"
+                           title="Voir">
+                            <i class="fas fa-eye text-slate-400 text-[10px]"></i> Voir
+                        </a>
+                        {% if user.is_superuser or user.role == 'ADMIN' or user.role == 'PRODUCTION_MANAGER' %}
+                        <a href="{% url 'production:production_update' production.pk %}"
+                           class="inline-flex items-center px-2.5 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-medium hover:bg-blue-100 transition-colors"
+                           title="Modifier">
+                            <i class="fas fa-pen text-[10px]"></i>
+                        </a>
+                        <a href="{% url 'production:production_delete' production.pk %}"
+                           class="inline-flex items-center px-2.5 py-1.5 bg-red-50 text-red-500 rounded-lg text-xs font-medium hover:bg-red-100 transition-colors"
+                           title="Supprimer">
+                            <i class="fas fa-trash-can text-[10px]"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="px-6 py-20 text-center">
+                    <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-screwdriver-wrench text-slate-300 text-2xl"></i>
+                    </div>
+                    <p class="text-slate-500 text-sm font-medium">Aucun ordre de fabrication</p>
+                    <p class="text-slate-400 text-xs mt-1">Créez un premier ordre pour démarrer la production</p>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

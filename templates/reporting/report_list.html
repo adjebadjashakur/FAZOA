@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% block title %}Rapports — Fazao{% endblock %}
+{% block page_title %}Gestion des Rapports{% endblock %}
+{% block page_subtitle %}Rapports générés{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+    * { font-family: 'DM Sans', sans-serif; }
+
+    .card-shadow { box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 32px rgba(0,0,0,0.06); }
+    .mono { font-family: 'DM Mono', monospace; }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #1e293b 0%, #1e40af 100%);
+        box-shadow: 0 2px 8px rgba(30,64,175,0.2);
+        transition: all 0.2s ease;
+    }
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+        box-shadow: 0 4px 16px rgba(30,64,175,0.35);
+        transform: translateY(-1px);
+    }
+
+    .table-row { transition: background 0.15s ease; }
+    .table-row:hover { background: linear-gradient(90deg, #f0f7ff, #f8fafc); }
+    .table-row:hover .row-actions { opacity: 1; }
+    .row-actions { opacity: 0.5; transition: opacity 0.15s; }
+
+    /* Type badge couleurs par catégorie */
+    .type-badge {
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 3px 10px; border-radius: 99px;
+        font-size: 11px; font-weight: 600;
+        border-width: 1px; border-style: solid;
+    }
+    .type-ventes    { background:#eff6ff; color:#1e40af; border-color:#bfdbfe; }
+    .type-stock     { background:#f0fdf4; color:#166534; border-color:#bbf7d0; }
+    .type-prod      { background:#f5f3ff; color:#5b21b6; border-color:#ddd6fe; }
+    .type-finance   { background:#fff7ed; color:#9a3412; border-color:#fed7aa; }
+    .type-default   { background:#f8fafc; color:#475569; border-color:#e2e8f0; }
+
+    .period-arrow { color: #94a3b8; font-size: 10px; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Barre d'outils -->
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <div>
+        <p class="text-sm text-slate-500">Consultez et gérez vos rapports analytiques</p>
+    </div>
+    {% if user.is_superuser or user.role == 'ADMIN' %}
+    <a href="{% url 'reporting:report_create' %}"
+       class="btn-primary inline-flex items-center gap-2 px-5 py-2.5 text-white text-sm font-semibold rounded-xl self-start sm:self-auto">
+        <i class="fas fa-plus text-blue-300 text-xs"></i>
+        Nouveau rapport
+    </a>
+    {% endif %}
+</div>
+
+<!-- Table -->
+<div class="bg-white rounded-2xl card-shadow overflow-hidden border border-slate-100">
+    <table class="w-full text-sm">
+        <thead>
+            <tr class="border-b border-slate-100">
+                <th class="px-6 py-4 text-left text-[10px] font-bold text-slate-400 uppercase tracking-[0.12em]">Rapport</th>
+                <th class="px-6 py-4 text-left text-[10px] font-bold text-slate-400 uppercase tracking-[0.12em]">Type</th>
+                <th class="px-6 py-4 text-left text-[10px] font-bold text-slate-400 uppercase tracking-[0.12em]">Période analysée</th>
+                <th class="px-6 py-4 text-left text-[10px] font-bold text-slate-400 uppercase tracking-[0.12em]">Généré le</th>
+                <th class="px-6 py-4 text-left text-[10px] font-bold text-slate-400 uppercase tracking-[0.12em]">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50">
+            {% for report in reports %}
+            <tr class="table-row group">
+
+                <!-- Nom -->
+                <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-chart-bar text-slate-400 text-[11px]"></i>
+                        </div>
+                        <span class="font-semibold text-slate-900 group-hover:text-blue-700 transition-colors">{{ report.name }}</span>
+                    </div>
+                </td>
+
+                <!-- Type -->
+                <td class="px-6 py-4">
+                    <span class="type-badge type-default">
+                        <i class="fas fa-tag text-[9px]"></i>
+                        {{ report.get_report_type_display }}
+                    </span>
+                </td>
+
+                <!-- Période -->
+                <td class="px-6 py-4">
+                    <div class="flex items-center gap-2">
+                        <span class="mono text-xs text-slate-600 bg-slate-50 border border-slate-200 px-2 py-1 rounded-lg">{{ report.start_date|date:"d/m/Y" }}</span>
+                        <i class="fas fa-arrow-right period-arrow"></i>
+                        <span class="mono text-xs text-slate-600 bg-slate-50 border border-slate-200 px-2 py-1 rounded-lg">{{ report.end_date|date:"d/m/Y" }}</span>
+                    </div>
+                </td>
+
+                <!-- Date génération -->
+                <td class="px-6 py-4">
+                    <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 rounded bg-emerald-50 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-clock text-emerald-400 text-[9px]"></i>
+                        </div>
+                        <span class="mono text-xs text-slate-500">{{ report.generated_at|date:"d/m/Y H:i" }}</span>
+                    </div>
+                </td>
+
+                <!-- Actions -->
+                <td class="px-6 py-4">
+                    <div class="row-actions flex items-center gap-1.5">
+                        <a href="{% url 'reporting:report_detail' report.pk %}"
+                           class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-xs font-medium hover:bg-slate-200 transition-colors">
+                            <i class="fas fa-eye text-slate-400 text-[10px]"></i> Voir
+                        </a>
+                        {% if user.is_superuser or user.role == 'ADMIN' %}
+                        <a href="{% url 'reporting:report_update' report.pk %}"
+                           class="inline-flex items-center px-2.5 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-medium hover:bg-blue-100 transition-colors">
+                            <i class="fas fa-pen text-[10px]"></i>
+                        </a>
+                        <a href="{% url 'reporting:report_delete' report.pk %}"
+                           class="inline-flex items-center px-2.5 py-1.5 bg-red-50 text-red-500 rounded-lg text-xs font-medium hover:bg-red-100 transition-colors">
+                            <i class="fas fa-trash-can text-[10px]"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="px-6 py-20 text-center">
+                    <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-chart-line text-slate-300 text-2xl"></i>
+                    </div>
+                    <p class="text-slate-500 text-sm font-medium">Aucun rapport généré</p>
+                    <p class="text-slate-400 text-xs mt-1">Créez votre premier rapport pour commencer l'analyse</p>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
