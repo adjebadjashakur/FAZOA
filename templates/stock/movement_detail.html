@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% block title %}Détail Mouvement de Stock — Fazao{% endblock %}
+{% block page_title %}Détail du Mouvement{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap');
+    * { font-family: 'DM Sans', sans-serif; }
+
+    .card-glow {
+        box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.1), 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    .badge-entree { background: #d1fae5; color: #065f46; }
+    .badge-sortie { background: #fee2e2; color: #b91c1c; }
+    .badge-ajustement { background: #fef3c7; color: #92400e; }
+    .badge-inventaire { background: #dbeafe; color: #1d4ed8; }
+
+    .detail-row { display: flex; align-items: center; padding: 1rem; border-bottom: 1px solid #e2e8f0; }
+    .detail-label { font-weight: 600; color: #64748b; font-size: 0.875rem; min-width: 150px; }
+    .detail-value { color: #1e293b; font-size: 1rem; }
+
+    .comparison-box {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 1rem;
+        padding: 1.5rem;
+        background: #f8fafc;
+        border-radius: 0.75rem;
+        border: 1px solid #e2e8f0;
+    }
+
+    .comparison-item {
+        text-align: center;
+        padding: 1rem;
+    }
+
+    .comparison-label { font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
+    .comparison-value { font-size: 1.75rem; font-weight: 700; margin-top: 0.5rem; font-family: monospace; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="w-full min-h-screen">
+
+    <!-- Breadcrumb -->
+    <div class="flex items-center gap-2 text-xs text-slate-400 mb-6 font-medium">
+        <a href="{% url 'stock:movement_list' %}" class="text-slate-600 hover:text-slate-900">Mouvements</a>
+        <i class="fas fa-chevron-right text-[9px] text-slate-300"></i>
+        <span>Détail</span>
+    </div>
+
+    <!-- Main Card -->
+    <div class="bg-white rounded-2xl card-glow overflow-hidden">
+
+        <!-- Header -->
+        <div class="px-8 py-6 bg-gradient-to-r from-slate-900 to-slate-800">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center">
+                        <i class="fas fa-circle-arrow-right text-blue-400 text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-white font-semibold text-base">Détail du Mouvement</h2>
+                        <p class="text-slate-400 text-xs mt-0.5">{{ movement.get_movement_type_display }}</p>
+                    </div>
+                </div>
+                <span class="badge-{{ movement.movement_type|lower }} px-4 py-2 rounded-full font-semibold text-sm">
+                    {{ movement.get_movement_type_display }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="px-8 py-8">
+
+            <!-- Comparison Box -->
+            <div class="mb-8">
+                <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4">Variation de Stock</h3>
+                <div class="comparison-box">
+                    <div class="comparison-item">
+                        <div class="comparison-label">Avant</div>
+                        <div class="comparison-value text-slate-600">{{ movement.quantity_before }}</div>
+                    </div>
+                    <div class="comparison-item">
+                        <div class="comparison-label">Changement</div>
+                        <div class="comparison-value {% if movement.quantity_changed > 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                            {% if movement.quantity_changed > 0 %}+{% endif %}{{ movement.quantity_changed }}
+                        </div>
+                    </div>
+                    <div class="comparison-item">
+                        <div class="comparison-label">Après</div>
+                        <div class="comparison-value text-slate-600">{{ movement.quantity_after }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stock Information -->
+            <div class="mb-8">
+                <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4">Article de Stock</h3>
+                <div class="border border-slate-100 rounded-lg overflow-hidden">
+                    <div class="detail-row">
+                        <div class="detail-label">SKU</div>
+                        <div class="detail-value font-mono">{{ movement.stock.sku }}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Désignation</div>
+                        <div class="detail-value">{{ movement.stock.name }}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Catégorie</div>
+                        <div class="detail-value">{{ movement.stock.get_category_display }}</div>
+                    </div>
+                    <div class="detail-row" style="border-bottom: none;">
+                        <div class="detail-label">Stock Actuel</div>
+                        <div class="detail-value font-bold text-lg">{{ movement.stock.quantity }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Movement Details -->
+            <div class="mb-8">
+                <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4">Détails du Mouvement</h3>
+                <div class="border border-slate-100 rounded-lg overflow-hidden">
+                    <div class="detail-row">
+                        <div class="detail-label">Type</div>
+                        <div class="detail-value">{{ movement.get_movement_type_display }}</div>
+                    </div>
+                    {% if movement.reason %}
+                    <div class="detail-row">
+                        <div class="detail-label">Raison</div>
+                        <div class="detail-value">{{ movement.reason }}</div>
+                    </div>
+                    {% endif %}
+                    {% if movement.reference_type %}
+                    <div class="detail-row">
+                        <div class="detail-label">Référence</div>
+                        <div class="detail-value">
+                            {{ movement.reference_type }}
+                            {% if movement.reference_id %}#{{ movement.reference_id }}{% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="detail-row" style="border-bottom: none;">
+                        <div class="detail-label">Créé par</div>
+                        <div class="detail-value">
+                            {{ movement.created_by.get_full_name|default:"Système" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Audit Information -->
+            <div class="mb-8">
+                <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4">Audit</h3>
+                <div class="border border-slate-100 rounded-lg overflow-hidden">
+                    <div class="detail-row" style="border-bottom: none;">
+                        <div class="detail-label">Date/Heure</div>
+                        <div class="detail-value">
+                            {{ movement.created_at|date:"d/m/Y H:i:s" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Back Button -->
+            <div class="flex gap-3">
+                <a href="{% url 'stock:movement_list' %}" class="px-6 py-2.5 bg-slate-200 text-slate-900 font-semibold rounded-lg hover:bg-slate-300 transition">
+                    <i class="fas fa-arrow-left"></i> Retour
+                </a>
+                <a href="{% url 'stock:movement_history' movement.stock.pk %}" class="px-6 py-2.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition">
+                    <i class="fas fa-history"></i> Historique du stock
+                </a>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
