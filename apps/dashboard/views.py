@@ -85,6 +85,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             )
             context['recent_productions'] = (
                 Production.objects
+                .select_related('commande')
                 .order_by('-id')[:5]
             )
 
