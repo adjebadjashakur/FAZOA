@@ -13,7 +13,7 @@ class CommandeListView(AllStaffMixin, ListView):
     paginate_by = 20
 
     def get_queryset(self):
-        queryset = super().get_queryset().order_by('-order_date')
+        queryset = super().get_queryset().select_related('client').order_by('-order_date')
         search = self.request.GET.get('search', '')
         status = self.request.GET.get('status', '')
         if search:
@@ -34,6 +34,9 @@ class CommandeDetailView(AllStaffMixin, DetailView):
     model = Commande
     template_name = 'commandes/commande_detail.html'
     context_object_name = 'commande'
+
+    def get_queryset(self):
+        return super().get_queryset().select_related('client')
 
 
 class CommandeCreateView(AdminOrSecretaryMixin, CreateView):

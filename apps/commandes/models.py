@@ -14,7 +14,7 @@ class Commande(models.Model):
         CANCELLED = 'CANCELLED', _('Annulée')
 
     client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='commandes', verbose_name=_('Client'))
-    order_number = models.CharField(max_length=50, unique=True, verbose_name=_('Numéro de commande'))
+    order_number = models.CharField(max_length=50, unique=True, verbose_name=_('Numéro de commande'), db_index=True)
     description = models.TextField(verbose_name=_('Description'))
     quantity = models.PositiveIntegerField(verbose_name=_('Quantité'))
     
@@ -22,7 +22,8 @@ class Commande(models.Model):
         max_length=20,
         choices=Status.choices,
         default=Status.PENDING,
-        verbose_name=_('Statut')
+        verbose_name=_('Statut'),
+        db_index=True
     )
     
     unit_price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_('Prix unitaire'))
@@ -37,6 +38,10 @@ class Commande(models.Model):
         verbose_name = _('Commande')
         verbose_name_plural = _('Commandes')
         ordering = ['-order_date']
+        indexes = [
+            models.Index(fields=['client', 'status']),
+            models.Index(fields=['status', '-order_date']),
+        ]
 
     def __str__(self):
         return self.order_number

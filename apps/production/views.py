@@ -13,7 +13,7 @@ class ProductionListView(AllStaffMixin, ListView):
     paginate_by = 20
 
     def get_queryset(self):
-        queryset = super().get_queryset().order_by('-created_at')
+        queryset = super().get_queryset().select_related('commande').order_by('-created_at')
         status = self.request.GET.get('status', '')
         if status:
             queryset = queryset.filter(status=status)
@@ -30,6 +30,9 @@ class ProductionDetailView(AllStaffMixin, DetailView):
     model = Production
     template_name = 'production/production_detail.html'
     context_object_name = 'production'
+
+    def get_queryset(self):
+        return super().get_queryset().select_related('commande')
 
 
 class ProductionCreateView(AdminOrProductionMixin, CreateView):
